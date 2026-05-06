@@ -64,3 +64,18 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## Design Constraints
+
+- **Brand colors are defined in `PROJECT_CONTEXT.md`** — use them exactly. Palette: Black, White, Gold (`#F7C07D`) as primary accent, Cream (`#FEE5C5`), Sienna (`#A76941`), Rust (`#903516`), Patina (`#6A9A8B`), Deep Sea (`#4B7178`), and a gray ramp. Amber (`#FFA14F`) used sparingly.
+- **White background.** No dark mode.
+- **No Tailwind.** The current app uses inline styles — match the existing visual language. CSS modules or styled-components are acceptable only if introduced consistently.
+- **Fonts:** `system-ui` / `-apple-system` / `sans-serif` stack. Clean and professional.
+- **This is a planning tool, not a dashboard.** Edit interactions should be fast and low-friction — think Notion or Linear, not a BI tool.
+
+## Out of Scope
+
+- **Don't redesign the roadmap visualization.** The current layout (swim lanes, AI ribbons with waypoints, two-panel split) is intentional and has been iterated on extensively. Improve code quality, not visual design.
+- **No in-app authentication.** Auth is handled at the infrastructure layer (Cloudflare Access), not in the app code.
+- **Don't over-engineer the backend.** Supabase with simple tables is the right level of complexity. No GraphQL, no complex relational models, no real-time subscriptions.
+- **Don't add features beyond what was asked.** Scope is intentionally constrained — surface ideas, don't ship them unprompted.
