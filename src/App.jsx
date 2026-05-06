@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { BRAND, LANE_COLOR, AI_MODEL_COLOR, STATUS, WAYPOINT, tint } from "./data/colors.js";
 
 // ─── DATA ───
 const MONTHS_2026 = ["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -8,11 +9,13 @@ const HERE_COL = 2; // May 2026
 
 // Cols: 0=Mar, 1=Apr, 2=May, 3=Jun, 4=Jul, 5=Aug, 6=Sep, 7=Oct, 8=Nov, 9=Dec, 10=Q1'27, 11=Q2'27, 12=Q3'27, 13=Q4'27
 
+const lane = (hex) => ({ bg: hex, light: tint(hex) });
+
 const STREAM_COLORS = {
-  data: { bg: "#6D28D9", light: "#EDE9FE", mid: "#C4B5FD", text: "#5B21B6", accent: "#7C3AED" },
-  infra: { bg: "#0F766E", light: "#CCFBF1", mid: "#5EEAD4", text: "#0F766E", accent: "#14B8A6" },
-  team: { bg: "#B45309", light: "#FEF3C7", mid: "#FCD34D", text: "#92400E", accent: "#D97706" },
-  product: { bg: "#9F1239", light: "#FFE4E6", mid: "#FECDD3", text: "#9F1239", accent: "#E11D48" },
+  data:    lane(LANE_COLOR.data),
+  infra:   lane(LANE_COLOR.infra),
+  team:    lane(LANE_COLOR.team),
+  product: lane(LANE_COLOR.product),
 };
 
 const MILESTONES = {
@@ -53,7 +56,7 @@ const AI_STREAMS = [
   {
     label: "Risk Scoring (Screening)",
     detail: "Long-term + short-term risk for undiagnosed individuals.",
-    color: "#0891B2",
+    color: AI_MODEL_COLOR.riskScreening,
     startCol: 0,
     endCol: 13,
     waypoints: [
@@ -67,7 +70,7 @@ const AI_STREAMS = [
   {
     label: "Risk Scoring (Recurrence)",
     detail: "Tumor-informed survivorship; first version in flight.",
-    color: "#4F46E5",
+    color: AI_MODEL_COLOR.riskRecurrence,
     startCol: 2,
     endCol: 13,
     waypoints: [
@@ -79,7 +82,7 @@ const AI_STREAMS = [
   {
     label: "Digital Twin",
     detail: "Recommendation engine over guidelines and policies.",
-    color: "#059669",
+    color: AI_MODEL_COLOR.digitalTwin,
     startCol: 0,
     endCol: 13,
     waypoints: [
@@ -91,7 +94,7 @@ const AI_STREAMS = [
   {
     label: "Transition / Evolution",
     detail: "World model: stage transitions, drug response, comorbidities, mortality.",
-    color: "#EA580C",
+    color: AI_MODEL_COLOR.transition,
     startCol: 0,
     endCol: 13,
     waypoints: [
@@ -102,18 +105,11 @@ const AI_STREAMS = [
   },
 ];
 
-const WAYPOINT_STYLES = {
-  rules: { bg: "#E8F5E9", border: "#4CAF50", icon: "◆", label: "v1 / baseline" },
-  shadow: { bg: "#FFF3E0", border: "#FF9800", icon: "◐", label: "Shadow / eval" },
-  integration: { bg: "#E3F2FD", border: "#2196F3", icon: "▲", label: "Version release" },
-  regulatory: { bg: "#FCE4EC", border: "#E91E63", icon: "★", label: "Regulatory" },
-};
-
 // ─── EVOLUTION TABLES (Tab: Model Evolution) ───
 const MODEL_EVOLUTION = [
   {
     name: "Risk Scoring",
-    color: "#0891B2",
+    color: AI_MODEL_COLOR.riskScreening,
     domain: "Screening (long-term + short-term) and Survivorship (recurrence)",
     rows: [
       { ver: "v1 (today)", approach: "20 risk models from literature, aggregated across 14 cancer types", data: "Literature priors via AI-agent swarm", when: "Now" },
@@ -124,7 +120,7 @@ const MODEL_EVOLUTION = [
   },
   {
     name: "Digital Twin",
-    color: "#059669",
+    color: AI_MODEL_COLOR.digitalTwin,
     domain: "Recommendation engine over guidelines and policies (preferences + constraints + interpretability)",
     rows: [
       { ver: "v1 (today)", approach: "PBVI solver", data: "Aggregated literature risk scores; lit-derived transition stats", when: "Now" },
@@ -134,7 +130,7 @@ const MODEL_EVOLUTION = [
   },
   {
     name: "Transition / Evolution",
-    color: "#EA580C",
+    color: AI_MODEL_COLOR.transition,
     domain: "World model: cancer-stage transitions, drug response, comorbidities, mortality",
     rows: [
       { ver: "v1 (today)", approach: "Subgroup statistics from literature (sex, ethnicity)", data: "AI-agent swarm over published literature", when: "Now" },
@@ -146,13 +142,6 @@ const MODEL_EVOLUTION = [
 
 // ─── COMPONENTS ───
 
-const STATUS_STYLES = {
-  "in-progress": { bg: "#DBEAFE", border: "#3B82F6", dot: "#3B82F6" },
-  "upcoming": { bg: "#FEF3C7", border: "#F59E0B", dot: "#F59E0B" },
-  "not-started": { bg: "#F3F4F6", border: "#D1D5DB", dot: "#9CA3AF" },
-  "future": { bg: "#F9FAFB", border: "#E5E7EB", dot: "#D1D5DB" },
-};
-
 function StreamLane({ items, label, color, expanded, onToggle }) {
   return (
     <div style={{ marginBottom: 2 }}>
@@ -160,7 +149,7 @@ function StreamLane({ items, label, color, expanded, onToggle }) {
         onClick={onToggle}
         style={{
           display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
-          background: color.bg, color: "white", cursor: "pointer",
+          background: color.bg, color: BRAND.white, cursor: "pointer",
           borderRadius: expanded ? "6px 6px 0 0" : 6, userSelect: "none",
           position: "sticky", left: 0, zIndex: 5,
         }}
@@ -173,11 +162,11 @@ function StreamLane({ items, label, color, expanded, onToggle }) {
         <div style={{ background: color.light, borderRadius: "0 0 6px 6px", padding: "6px 0", position: "relative", minHeight: 60 }}>
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${ALL_COLS.length}, 120px)`, position: "relative" }}>
             {ALL_COLS.map((_, i) => (
-              <div key={i} style={{ borderRight: i === 9 ? `2px solid ${color.bg}40` : `1px solid ${color.bg}15`, height: "100%", position: "absolute", left: i * 120 + 120, top: 0, bottom: 0 }} />
+              <div key={i} style={{ borderRight: i === 9 ? `2px solid ${tint(color.bg, "40")}` : `1px solid ${tint(color.bg, "15")}`, height: "100%", position: "absolute", left: i * 120 + 120, top: 0, bottom: 0 }} />
             ))}
             <div style={{ gridColumn: `1 / -1`, padding: "4px 8px" }}>
               {items.map((item, idx) => {
-                const st = STATUS_STYLES[item.status];
+                const st = STATUS[item.status];
                 return (
                   <div key={idx} style={{
                     marginLeft: item.col * 120,
@@ -192,10 +181,10 @@ function StreamLane({ items, label, color, expanded, onToggle }) {
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                       <div style={{ width: 6, height: 6, borderRadius: "50%", background: st.dot, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "#1F2937" }}>{item.label}</span>
-                      {item.milestone && <span style={{ fontSize: 9, background: color.bg, color: "white", padding: "1px 5px", borderRadius: 3, fontWeight: 600 }}>MILESTONE</span>}
+                      <span style={{ fontSize: 11, fontWeight: 600, color: BRAND.black }}>{item.label}</span>
+                      {item.milestone && <span style={{ fontSize: 9, background: color.bg, color: BRAND.white, padding: "1px 5px", borderRadius: 3, fontWeight: 600 }}>MILESTONE</span>}
                     </div>
-                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 3, lineHeight: 1.4 }}>{item.detail}</div>
+                    <div style={{ fontSize: 10, color: BRAND.gray, marginTop: 3, lineHeight: 1.4 }}>{item.detail}</div>
                   </div>
                 );
               })}
@@ -208,24 +197,24 @@ function StreamLane({ items, label, color, expanded, onToggle }) {
 }
 
 function AIStreamLane({ expanded, onToggle }) {
-  const aiColor = { bg: "#312E81", light: "#EEF2FF", mid: "#C7D2FE" };
+  const aiColor = { bg: LANE_COLOR.ai, light: tint(LANE_COLOR.ai) };
   return (
     <div style={{ marginBottom: 2 }}>
       <div onClick={onToggle} style={{
         display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
-        background: aiColor.bg, color: "white", cursor: "pointer",
+        background: aiColor.bg, color: BRAND.white, cursor: "pointer",
         borderRadius: expanded ? "6px 6px 0 0" : 6, userSelect: "none",
       }}>
         <span style={{ fontSize: 11, transform: expanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>▶</span>
         <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5 }}>AI MODELS — continuous evolution</span>
-        <span style={{ fontSize: 10, background: "#C7D2FE", color: "#312E81", padding: "1px 6px", borderRadius: 3, fontWeight: 600, marginLeft: 8 }}>v1 → vN</span>
+        <span style={{ fontSize: 10, background: tint(BRAND.white, "33"), color: BRAND.white, padding: "1px 6px", borderRadius: 3, fontWeight: 600, marginLeft: 8 }}>v1 → vN</span>
         <span style={{ fontSize: 11, opacity: 0.7, marginLeft: "auto" }}>{AI_STREAMS.length} models</span>
       </div>
       {expanded && (
         <div style={{ background: aiColor.light, borderRadius: "0 0 6px 6px", padding: "8px 0", position: "relative" }}>
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${ALL_COLS.length}, 120px)`, position: "relative" }}>
             {ALL_COLS.map((_, i) => (
-              <div key={i} style={{ borderRight: i === 9 ? `2px solid ${aiColor.bg}20` : `1px solid ${aiColor.bg}08`, height: "100%", position: "absolute", left: i * 120 + 120, top: 0, bottom: 0 }} />
+              <div key={i} style={{ borderRight: i === 9 ? `2px solid ${tint(aiColor.bg, "40")}` : `1px solid ${tint(aiColor.bg, "15")}`, height: "100%", position: "absolute", left: i * 120 + 120, top: 0, bottom: 0 }} />
             ))}
             <div style={{ gridColumn: "1 / -1", padding: "4px 8px" }}>
               {AI_STREAMS.map((stream, si) => (
@@ -233,13 +222,13 @@ function AIStreamLane({ expanded, onToggle }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, marginLeft: stream.startCol * 120 }}>
                     <div style={{ width: 8, height: 8, borderRadius: 2, background: stream.color }} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: stream.color }}>{stream.label}</span>
-                    <span style={{ fontSize: 9, color: "#6B7280" }}>{stream.detail}</span>
+                    <span style={{ fontSize: 9, color: BRAND.gray }}>{stream.detail}</span>
                   </div>
                   {/* Waypoint labels ABOVE ribbon (even-indexed) */}
                   <div style={{ position: "relative", height: 16, marginBottom: 2 }}>
                     {stream.waypoints.map((wp, wi) => {
                       if (wi % 2 !== 0) return null;
-                      const wpStyle = WAYPOINT_STYLES[wp.type];
+                      const wpStyle = WAYPOINT[wp.type];
                       const leftPx = stream.startCol * 120 + (wp.col - stream.startCol) * 120;
                       return (
                         <div key={wi} style={{
@@ -256,12 +245,12 @@ function AIStreamLane({ expanded, onToggle }) {
                     marginLeft: stream.startCol * 120,
                     width: (stream.endCol - stream.startCol + 1) * 120 - 8,
                     height: 8,
-                    background: `linear-gradient(90deg, ${stream.color}30, ${stream.color}80)`,
+                    background: `linear-gradient(90deg, ${tint(stream.color, "30")}, ${tint(stream.color, "80")})`,
                     borderRadius: 4,
                     position: "relative",
                   }}>
                     {stream.waypoints.map((wp, wi) => {
-                      const wpStyle = WAYPOINT_STYLES[wp.type];
+                      const wpStyle = WAYPOINT[wp.type];
                       const leftPx = (wp.col - stream.startCol) * 120;
                       return (
                         <div key={wi} style={{ position: "absolute", left: leftPx, top: -3, transform: "translateX(-6px)" }}>
@@ -278,7 +267,7 @@ function AIStreamLane({ expanded, onToggle }) {
                   <div style={{ position: "relative", height: 16, marginTop: 2 }}>
                     {stream.waypoints.map((wp, wi) => {
                       if (wi % 2 !== 1) return null;
-                      const wpStyle = WAYPOINT_STYLES[wp.type];
+                      const wpStyle = WAYPOINT[wp.type];
                       const leftPx = stream.startCol * 120 + (wp.col - stream.startCol) * 120;
                       return (
                         <div key={wi} style={{
@@ -294,14 +283,14 @@ function AIStreamLane({ expanded, onToggle }) {
               ))}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 14, padding: "4px 12px", borderTop: "1px solid #E5E7EB", marginTop: 4 }}>
-            {Object.entries(WAYPOINT_STYLES).filter(([k]) => k !== "regulatory").map(([key, s]) => (
+          <div style={{ display: "flex", gap: 14, padding: "4px 12px", borderTop: `1px solid ${BRAND.midGray}`, marginTop: 4 }}>
+            {Object.entries(WAYPOINT).filter(([k]) => k !== "regulatory").map(([key, s]) => (
               <div key={key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.bg, border: `2px solid ${s.border}` }} />
-                <span style={{ fontSize: 9, color: "#6B7280" }}>{s.label}</span>
+                <span style={{ fontSize: 9, color: BRAND.gray }}>{s.label}</span>
               </div>
             ))}
-            <span style={{ fontSize: 9, color: "#9CA3AF", marginLeft: 8 }}>Each version: more refined algorithms, more modalities, larger datasets.</span>
+            <span style={{ fontSize: 9, color: BRAND.gray, marginLeft: 8 }}>Each version: more refined algorithms, more modalities, larger datasets.</span>
           </div>
         </div>
       )}
@@ -326,14 +315,14 @@ export default function AIResearchRoadmap() {
   ];
 
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', system-ui, sans-serif", background: "#F8F9FB", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "system-ui, -apple-system, sans-serif", background: BRAND.white, minHeight: "100vh" }}>
       {/* Header */}
-      <div style={{ background: "#1B2A4A", padding: "20px 24px 0" }}>
+      <div style={{ background: BRAND.black, padding: "20px 24px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, color: "#9FE1CB", textTransform: "uppercase" }}>BIOS Life · AI Department</div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "white", margin: "4px 0" }}>AI Research Roadmap — 2026 / 2027</h1>
-            <div style={{ fontSize: 12, color: "#94A3B8" }}>3 reusable models · multi-modal data strategy · 2026–2027 · v1 draft May 2026</div>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, color: BRAND.gold, textTransform: "uppercase" }}>BIOS Life · AI Department</div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: BRAND.white, margin: "4px 0" }}>AI Research Roadmap — 2026 / 2027</h1>
+            <div style={{ fontSize: 12, color: BRAND.midGray }}>3 reusable models · multi-modal data strategy · 2026–2027 · v1 draft May 2026</div>
           </div>
           <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {[
@@ -344,7 +333,7 @@ export default function AIResearchRoadmap() {
             ].map((s) => (
               <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 2, background: s.color }} />
-                <span style={{ fontSize: 11, color: "#CBD5E1" }}>{s.label}</span>
+                <span style={{ fontSize: 11, color: BRAND.lightGray }}>{s.label}</span>
               </div>
             ))}
           </div>
@@ -357,8 +346,8 @@ export default function AIResearchRoadmap() {
               onClick={() => setActiveTab(t.key)}
               style={{
                 padding: "10px 20px", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                background: activeTab === t.key ? "#F8F9FB" : "transparent",
-                color: activeTab === t.key ? "#1B2A4A" : "#94A3B8",
+                background: activeTab === t.key ? BRAND.white : "transparent",
+                color: activeTab === t.key ? BRAND.black : BRAND.midGray,
                 border: "none", borderRadius: "6px 6px 0 0",
                 transition: "all 0.15s",
               }}
@@ -380,12 +369,12 @@ export default function AIResearchRoadmap() {
                   {ALL_COLS.map((col, i) => (
                     <div key={i} style={{
                       fontSize: 11, fontWeight: 600, textAlign: "center", padding: "6px 0",
-                      color: i < 10 ? "#1B2A4A" : "#6B7280",
-                      borderBottom: `2px solid ${i < 10 ? "#1B2A4A" : "#D1D5DB"}`,
-                      background: i === HERE_COL ? "#DBEAFE" : "transparent",
+                      color: i < 10 ? BRAND.black : BRAND.gray,
+                      borderBottom: `2px solid ${i < 10 ? BRAND.black : BRAND.midGray}`,
+                      background: i === HERE_COL ? BRAND.cream : "transparent",
                     }}>
                       {col}
-                      {i === HERE_COL && <div style={{ fontSize: 9, color: "#3B82F6", fontWeight: 400 }}>WE ARE HERE</div>}
+                      {i === HERE_COL && <div style={{ fontSize: 9, color: BRAND.gold, fontWeight: 700 }}>WE ARE HERE</div>}
                     </div>
                   ))}
                 </div>
@@ -399,16 +388,16 @@ export default function AIResearchRoadmap() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "12px 16px", background: "white", borderRadius: 6, border: "1px solid #E5E7EB" }}>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", padding: "12px 16px", background: BRAND.white, borderRadius: 6, border: `1px solid ${BRAND.midGray}` }}>
               {[
-                { label: "In Progress", ...STATUS_STYLES["in-progress"] },
-                { label: "Upcoming", ...STATUS_STYLES["upcoming"] },
-                { label: "Not Started", ...STATUS_STYLES["not-started"] },
-                { label: "Future / 2027+", ...STATUS_STYLES["future"] },
+                { label: "In Progress", ...STATUS["in-progress"] },
+                { label: "Upcoming", ...STATUS["upcoming"] },
+                { label: "Not Started", ...STATUS["not-started"] },
+                { label: "Future / 2027+", ...STATUS["future"] },
               ].map((s) => (
                 <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.dot }} />
-                  <span style={{ fontSize: 11, color: "#6B7280" }}>{s.label}</span>
+                  <span style={{ fontSize: 11, color: BRAND.gray }}>{s.label}</span>
                 </div>
               ))}
             </div>
@@ -418,7 +407,7 @@ export default function AIResearchRoadmap() {
         {/* ── TAB: STRATEGY ── */}
         {activeTab === "strategy" && (
           <div style={{ paddingTop: 16, maxWidth: 900 }}>
-            <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: BRAND.gray, lineHeight: 1.6, marginBottom: 24 }}>
               The <em>why</em> and the <em>what</em>. The half-year operational layer lives in the <strong>Roadmap</strong> tab; per-model trajectories live in <strong>Model Evolution</strong>.
             </p>
 
@@ -486,18 +475,18 @@ export default function AIResearchRoadmap() {
         {/* ── TAB: MODEL EVOLUTION ── */}
         {activeTab === "models" && (
           <div style={{ paddingTop: 16, maxWidth: 1100 }}>
-            <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: BRAND.gray, lineHeight: 1.6, marginBottom: 24 }}>
               Each model evolves along three axes: more refined algorithms, more modalities, larger datasets. v1 exists today; subsequent versions ship as data and capability come online.
             </p>
             {MODEL_EVOLUTION.map((m, i) => (
-              <div key={i} style={{ marginBottom: 24, background: "white", borderRadius: 8, border: "1px solid #E5E7EB", overflow: "hidden" }}>
-                <div style={{ padding: "14px 16px", borderBottom: "1px solid #E5E7EB", borderLeft: `4px solid ${m.color}`, background: "#FAFBFC" }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1B2A4A" }}>{m.name}</div>
-                  <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>{m.domain}</div>
+              <div key={i} style={{ marginBottom: 24, background: BRAND.white, borderRadius: 8, border: `1px solid ${BRAND.midGray}`, overflow: "hidden" }}>
+                <div style={{ padding: "14px 16px", borderBottom: `1px solid ${BRAND.midGray}`, borderLeft: `4px solid ${m.color}`, background: BRAND.nearWhite }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: BRAND.black }}>{m.name}</div>
+                  <div style={{ fontSize: 11, color: BRAND.gray, marginTop: 2 }}>{m.domain}</div>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ background: "#F8FAFC" }}>
+                    <tr style={{ background: BRAND.nearWhite }}>
                       <th style={thStyle}>Version</th>
                       <th style={thStyle}>Approach</th>
                       <th style={thStyle}>Data</th>
@@ -506,11 +495,11 @@ export default function AIResearchRoadmap() {
                   </thead>
                   <tbody>
                     {m.rows.map((row, ri) => (
-                      <tr key={ri} style={{ borderTop: "1px solid #F1F5F9" }}>
+                      <tr key={ri} style={{ borderTop: `1px solid ${BRAND.lightGray}` }}>
                         <td style={{ ...tdStyle, fontWeight: 700, color: m.color, width: 110 }}>{row.ver}</td>
                         <td style={tdStyle}>{row.approach}</td>
                         <td style={tdStyle}>{row.data}</td>
-                        <td style={{ ...tdStyle, color: "#6B7280", width: 130 }}>{row.when}</td>
+                        <td style={{ ...tdStyle, color: BRAND.gray, width: 130 }}>{row.when}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -518,9 +507,9 @@ export default function AIResearchRoadmap() {
               </div>
             ))}
 
-            <div style={{ marginTop: 12, padding: 16, background: "#EEF2FF", borderRadius: 8, border: "1px solid #C7D2FE" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#312E81", marginBottom: 6 }}>Convergence hypothesis</div>
-              <div style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>
+            <div style={{ marginTop: 12, padding: 16, background: BRAND.cream, borderRadius: 8, border: `1px solid ${BRAND.gold}` }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: BRAND.black, marginBottom: 6 }}>Convergence hypothesis</div>
+              <div style={{ fontSize: 12, color: BRAND.black, lineHeight: 1.6 }}>
                 The same longitudinal transformer is expected to eventually serve as both the risk-scoring backbone and the transition model the digital twin operates against — a single foundation model used twice.
               </div>
             </div>
@@ -532,17 +521,17 @@ export default function AIResearchRoadmap() {
 }
 
 // ─── STRATEGY HELPERS ───
-const ulStyle = { fontSize: 13, color: "#374151", lineHeight: 1.7, paddingLeft: 22, margin: "8px 0" };
-const olStyle = { fontSize: 13, color: "#374151", lineHeight: 1.7, paddingLeft: 22, margin: "8px 0" };
-const thStyle = { fontSize: 11, fontWeight: 700, color: "#475569", textAlign: "left", padding: "10px 14px", borderBottom: "1px solid #E2E8F0" };
+const ulStyle = { fontSize: 13, color: BRAND.black, lineHeight: 1.7, paddingLeft: 22, margin: "8px 0" };
+const olStyle = { fontSize: 13, color: BRAND.black, lineHeight: 1.7, paddingLeft: 22, margin: "8px 0" };
+const thStyle = { fontSize: 11, fontWeight: 700, color: BRAND.black, textAlign: "left", padding: "10px 14px", borderBottom: `1px solid ${BRAND.midGray}` };
 const thStyleRight = { ...thStyle, textAlign: "left" };
-const tdStyle = { fontSize: 12, color: "#1F2937", padding: "10px 14px", lineHeight: 1.5, verticalAlign: "top" };
+const tdStyle = { fontSize: 12, color: BRAND.black, padding: "10px 14px", lineHeight: 1.5, verticalAlign: "top" };
 
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1B2A4A", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid #E5E7EB" }}>{title}</h2>
-      <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.7 }}>{children}</div>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: BRAND.black, marginBottom: 8, paddingBottom: 6, borderBottom: `2px solid ${BRAND.gold}` }}>{title}</h2>
+      <div style={{ fontSize: 13, color: BRAND.black, lineHeight: 1.7 }}>{children}</div>
     </div>
   );
 }
