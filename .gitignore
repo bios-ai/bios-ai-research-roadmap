@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+.env.local
+.vercel
+vite.config.js.timestamp-*.mjs
+.DS_Store
